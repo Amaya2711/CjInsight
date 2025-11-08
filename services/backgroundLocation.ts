@@ -6,6 +6,7 @@ import { errorToString } from '@/utils/formatSupabaseError';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { timestampToPeruTime } from '@/utils/timezone';
 
 const LOCATION_TASK_NAME = 'background-location-task';
 const CREW_ID_KEY = 'tracking-crew-id';
@@ -210,15 +211,13 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
 
         console.log('[BackgroundLocation] 🛣️  Registrando punto en CUADRILLA_RUTA...');
         
-        // Obtener fecha/hora local del dispositivo
+        // Obtener fecha/hora local del dispositivo (Perú UTC-5)
         const now = new Date(location.timestamp);
-        const timezoneOffset = now.getTimezoneOffset() * 60000; // offset en milisegundos
-        const localTime = new Date(now.getTime() - timezoneOffset);
-        const localISOString = localTime.toISOString().slice(0, -1); // Remover la 'Z' al final
+        const localISOString = timestampToPeruTime(location.timestamp);
         
         console.log('[BackgroundLocation] ⏰ Timestamp original (UTC):', now.toISOString());
-        console.log('[BackgroundLocation] 🌍 Timezone offset (minutos):', now.getTimezoneOffset());
-        console.log('[BackgroundLocation] ⏰ Timestamp local:', localISOString);
+        console.log('[BackgroundLocation] 🌍 Timezone: America/Lima (UTC-5)');
+        console.log('[BackgroundLocation] ⏰ Timestamp local (Perú):', localISOString);
         
         const rutaResult = await insertCuadrillaRuta({
           cuadrilla_id: crewId,

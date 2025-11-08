@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import { formatSupabaseError } from '@/utils/formatSupabaseError';
+import { getPeruNow } from '@/utils/timezone';
 
 export type CuadrillaRutaDB = {
   id: number;
@@ -33,14 +34,11 @@ export async function insertCuadrillaRuta(ruta: CuadrillaRutaInsert): Promise<{ 
       longitud: ruta.longitud,
     });
 
-    // Si no se proporciona timestamp, usar hora local del dispositivo
+    // Si no se proporciona timestamp, usar hora local del dispositivo (Perú UTC-5)
     let timestampToUse = ruta.timestamp;
     if (!timestampToUse) {
-      const now = new Date();
-      const timezoneOffset = now.getTimezoneOffset() * 60000;
-      const localTime = new Date(now.getTime() - timezoneOffset);
-      timestampToUse = localTime.toISOString().slice(0, -1);
-      console.log('[CuadrillaRuta] ⏰ Usando timestamp local:', timestampToUse);
+      timestampToUse = getPeruNow();
+      console.log('[CuadrillaRuta] ⏰ Usando timestamp local (Perú):', timestampToUse);
     }
     
     const { data, error } = await supabase

@@ -8,6 +8,7 @@ import { supabase } from "@/utils/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from '@react-native-community/netinfo';
 import { runDiagnostics } from "@/utils/diagnostics";
+import { getPeruNow } from "@/utils/timezone";
 
 import { startBackgroundLocation, stopBackgroundLocation, isTrackingLocation } from "@/services/backgroundLocation";
 
@@ -122,7 +123,7 @@ export default function ProfileScreen() {
         .update({
           latitud: latitude,
           longitud: longitude,
-          updated_at: new Date().toISOString(),
+          updated_at: getPeruNow(),
         })
         .eq("id", user.id)
         .select();
@@ -222,7 +223,7 @@ export default function ProfileScreen() {
                   .update({
                     latitud: latitude,
                     longitud: longitude,
-                    updated_at: new Date().toISOString(),
+                    updated_at: getPeruNow(),
                   })
                   .eq("id", user.id)
                   .select();
