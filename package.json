@@ -9,7 +9,7 @@
     "start-local": "expo start",
     "start-web-local": "expo start --web",
     "prebuild:web": "node generate-icons.js",
-    "build:web": "npx expo export --platform web",
+    "build:web": "npx expo export --platform web && node postbuild.js",
     "validate": "node validate-app.js",
     "lint": "expo lint"
   },
