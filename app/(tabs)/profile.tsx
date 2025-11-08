@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from '@react-native-community/netinfo';
 import { runDiagnostics } from "@/utils/diagnostics";
 import { getPeruNow } from "@/utils/timezone";
+import { insertCuadrillaRuta } from "@/services/cuadrillaRuta";
 
 import { startBackgroundLocation, stopBackgroundLocation, isTrackingLocation } from "@/services/backgroundLocation";
 
@@ -109,7 +110,7 @@ export default function ProfileScreen() {
         accuracy: Location.Accuracy.High,
       });
 
-      const { latitude, longitude } = location.coords;
+      const { latitude, longitude, accuracy, altitude, heading, speed } = location.coords;
       setCurrentLocation({ latitude, longitude });
       setLastUpdate(new Date());
       
@@ -118,6 +119,7 @@ export default function ProfileScreen() {
       console.log("[Profile] 📍 Latitud:", latitude);
       console.log("[Profile] 📍 Longitud:", longitude);
 
+      // 1. Actualizar tabla cuadrillas (posición actual)
       const { data, error } = await supabase
         .from("cuadrillas")
         .update({
@@ -139,6 +141,27 @@ export default function ProfileScreen() {
         console.log("[Profile] 🎯 ID actualizado:", user.id);
         console.log("[Profile] 📍 Latitud:", data[0].latitud);
         console.log("[Profile] 📍 Longitud:", data[0].longitud);
+
+        // 2. Insertar en cuadrilla_ruta (historial de ruta)
+        if (user.id) {
+          console.log("[Profile] 🛣️  Registrando punto en CUADRILLA_RUTA...");
+          const rutaResult = await insertCuadrillaRuta({
+            cuadrilla_id: user.id,
+            latitud: latitude,
+            longitud: longitude,
+            timestamp: getPeruNow(),
+            accuracy: accuracy || null,
+            altitude: altitude || null,
+            heading: heading || null,
+            speed: speed || null,
+          });
+
+          if (rutaResult.error) {
+            console.error("[Profile] ⚠️  Error registrando punto en CUADRILLA_RUTA:", rutaResult.error);
+          } else {
+            console.log("[Profile] ✅ Punto registrado en CUADRILLA_RUTA (ID:", rutaResult.data?.id, ")");
+          }
+        }
       } else if (!error) {
         console.log("[Profile] ⚠️ Sin datos devueltos - verificar permisos RLS");
       }
@@ -211,13 +234,14 @@ export default function ProfileScreen() {
               distanceInterval: 0, // Sin distancia mínima
             },
             async (location) => {
-              const { latitude, longitude } = location.coords;
+              const { latitude, longitude, accuracy, altitude, heading, speed } = location.coords;
               console.log(`[Profile] 📍 Nueva ubicación (watchPosition ${platformName}):`, latitude, longitude);
               
               setCurrentLocation({ latitude, longitude });
               setLastUpdate(new Date());
               
               try {
+                // 1. Actualizar tabla cuadrillas (posición actual)
                 const { data, error } = await supabase
                   .from("cuadrillas")
                   .update({
@@ -232,6 +256,27 @@ export default function ProfileScreen() {
                   console.error("[Profile] ❌ Error actualizando ubicación:", error.message);
                 } else if (data && data.length > 0) {
                   console.log(`[Profile] ✅ Ubicación actualizada via watchPosition (${platformName})`);
+                }
+
+                // 2. Insertar en cuadrilla_ruta (historial de ruta)
+                if (user.id) {
+                  console.log("[Profile] 🛣️  Registrando punto en CUADRILLA_RUTA...");
+                  const rutaResult = await insertCuadrillaRuta({
+                    cuadrilla_id: user.id,
+                    latitud: latitude,
+                    longitud: longitude,
+                    timestamp: getPeruNow(),
+                    accuracy: accuracy || null,
+                    altitude: altitude || null,
+                    heading: heading || null,
+                    speed: speed || null,
+                  });
+
+                  if (rutaResult.error) {
+                    console.error("[Profile] ⚠️  Error registrando punto en CUADRILLA_RUTA:", rutaResult.error);
+                  } else {
+                    console.log("[Profile] ✅ Punto registrado en CUADRILLA_RUTA (ID:", rutaResult.data?.id, ")");
+                  }
                 }
               } catch (err) {
                 console.error("[Profile] ❌ Error en watchPosition:", err);
