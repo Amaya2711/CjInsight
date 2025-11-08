@@ -8,6 +8,7 @@
     "start-web-dev": "DEBUG=expo* bunx rork start -p x3zu0jshmqesbonm9omb9 --web --tunnel",
     "start-local": "expo start",
     "start-web-local": "expo start --web",
+    "prebuild:web": "node generate-icons.js",
     "build:web": "npx expo export --platform web",
     "validate": "node validate-app.js",
     "lint": "expo lint"
