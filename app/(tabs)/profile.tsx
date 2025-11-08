@@ -408,6 +408,10 @@ export default function ProfileScreen() {
                   <Text style={styles.locationLabel}>Longitud:</Text>
                   <Text style={styles.locationValue}>{currentLocation.longitude.toFixed(6)}</Text>
                 </View>
+                <View style={styles.locationRow}>
+                  <Text style={styles.locationLabel}>Plataforma:</Text>
+                  <Text style={styles.locationValue}>{Platform.OS}</Text>
+                </View>
                 {lastUpdate && (
                   <Text style={styles.locationTime}>
                     Última actualización: {lastUpdate.toLocaleTimeString()}
