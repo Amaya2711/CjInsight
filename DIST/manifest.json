@@ -1,0 +1,59 @@
+{
+  "name": "Field Tech Supervisor App",
+  "short_name": "Tech Supervisor",
+  "description": "Aplicación de supervisión para técnicos de campo con seguimiento de rutas, cuadrillas y gestión de tickets",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "productivity",
+    "business",
+    "utilities"
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Iniciar Sesión",
+      "short_name": "Login",
+      "description": "Acceder a la aplicación",
+      "url": "/login",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Rutas y Cuadrillas",
+      "short_name": "Rutas",
+      "description": "Ver rutas y cuadrillas",
+      "url": "/rutas-cuadrillas",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

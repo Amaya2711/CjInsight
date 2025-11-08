@@ -5,9 +5,10 @@ node_modules/
 
 # Expo
 .expo/
-dist/
+/dist/
 web-build/
 expo-env.d.ts
+# Note: DIST/ folder is kept for Netlify deployment
 
 # Native
 *.orig.*
