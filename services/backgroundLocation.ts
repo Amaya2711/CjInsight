@@ -209,11 +209,22 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
         console.log('[BackgroundLocation] ╚════════════════════════════════════════════╝');
 
         console.log('[BackgroundLocation] 🛣️  Registrando punto en CUADRILLA_RUTA...');
+        
+        // Obtener fecha/hora local del dispositivo
+        const now = new Date(location.timestamp);
+        const timezoneOffset = now.getTimezoneOffset() * 60000; // offset en milisegundos
+        const localTime = new Date(now.getTime() - timezoneOffset);
+        const localISOString = localTime.toISOString().slice(0, -1); // Remover la 'Z' al final
+        
+        console.log('[BackgroundLocation] ⏰ Timestamp original (UTC):', now.toISOString());
+        console.log('[BackgroundLocation] 🌍 Timezone offset (minutos):', now.getTimezoneOffset());
+        console.log('[BackgroundLocation] ⏰ Timestamp local:', localISOString);
+        
         const rutaResult = await insertCuadrillaRuta({
           cuadrilla_id: crewId,
           latitud: latitude,
           longitud: longitude,
-          timestamp: new Date(location.timestamp).toISOString(),
+          timestamp: localISOString, // Usar timestamp local
           accuracy: accuracy || null,
           altitude: altitude || null,
           heading: heading || null,
@@ -298,21 +309,26 @@ export async function startBackgroundLocation(crewId: number): Promise<{ success
 
     try {
       console.log('[BackgroundLocation] 📍 Configurando seguimiento...');
-      console.log('[BackgroundLocation] - Precisión: Alta');
+      console.log('[BackgroundLocation] - Precisión: Máxima (BestForNavigation)');
       console.log('[BackgroundLocation] - Intervalo de tiempo: 5 segundos');
       console.log('[BackgroundLocation] - Distancia mínima: 0 metros (cualquier movimiento)');
+      console.log('[BackgroundLocation] - Actualizaciones NO pausan automáticamente');
+      console.log('[BackgroundLocation] - Servicio foreground activo (Android)');
       
       await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-        accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 0,
+        accuracy: Location.Accuracy.BestForNavigation, // Máxima precisión
+        timeInterval: 5000, // Cada 5 segundos
+        distanceInterval: 0, // Sin importar distancia mínima
+        deferredUpdatesInterval: 5000, // Enviar actualizaciones cada 5 seg
+        deferredUpdatesDistance: 0, // Sin esperar distancia mínima
         foregroundService: {
-          notificationTitle: 'Seguimiento de ubicación',
-          notificationBody: 'La app está rastreando tu ubicación en segundo plano',
-          notificationColor: '#2563EB',
+          notificationTitle: 'Seguimiento de ubicación activo',
+          notificationBody: 'CJ Insight está rastreando tu ubicación cada 5 segundos',
+          notificationColor: '#0066cc',
         },
-        pausesUpdatesAutomatically: false,
-        showsBackgroundLocationIndicator: true,
+        pausesUpdatesAutomatically: false, // NUNCA pausar automáticamente
+        showsBackgroundLocationIndicator: true, // Mostrar indicador en iOS
+        activityType: Location.ActivityType.AutomotiveNavigation, // Optimizado para navegación
       });
 
       console.log('[BackgroundLocation] ✅ Background location iniciado');

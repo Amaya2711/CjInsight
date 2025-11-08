@@ -33,13 +33,23 @@ export async function insertCuadrillaRuta(ruta: CuadrillaRutaInsert): Promise<{ 
       longitud: ruta.longitud,
     });
 
+    // Si no se proporciona timestamp, usar hora local del dispositivo
+    let timestampToUse = ruta.timestamp;
+    if (!timestampToUse) {
+      const now = new Date();
+      const timezoneOffset = now.getTimezoneOffset() * 60000;
+      const localTime = new Date(now.getTime() - timezoneOffset);
+      timestampToUse = localTime.toISOString().slice(0, -1);
+      console.log('[CuadrillaRuta] ⏰ Usando timestamp local:', timestampToUse);
+    }
+    
     const { data, error } = await supabase
       .from('cuadrilla_ruta')
       .insert({
         cuadrilla_id: ruta.cuadrilla_id,
         latitud: ruta.latitud,
         longitud: ruta.longitud,
-        timestamp: ruta.timestamp || new Date().toISOString(),
+        timestamp: timestampToUse,
         accuracy: ruta.accuracy || null,
         altitude: ruta.altitude || null,
         heading: ruta.heading || null,

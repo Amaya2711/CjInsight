@@ -196,6 +196,55 @@ export default function ProfileScreen() {
       }
 
       console.log("[Profile] ✅ Permisos concedidos");
+      
+      // En Android, usar watchPositionAsync para actualizaciones continuas
+      if (Platform.OS === "android") {
+        console.log("[Profile] 📱 Android detectado - usando watchPositionAsync para mejor precisión");
+        
+        try {
+          const watchSubscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.BestForNavigation,
+              timeInterval: 5000, // Cada 5 segundos
+              distanceInterval: 0, // Sin distancia mínima
+            },
+            async (location) => {
+              const { latitude, longitude } = location.coords;
+              console.log("[Profile] 📍 Nueva ubicación (watchPosition):", latitude, longitude);
+              
+              setCurrentLocation({ latitude, longitude });
+              setLastUpdate(new Date());
+              
+              try {
+                const { data, error } = await supabase
+                  .from("cuadrillas")
+                  .update({
+                    latitud: latitude,
+                    longitud: longitude,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", user.id)
+                  .select();
+
+                if (error) {
+                  console.error("[Profile] ❌ Error actualizando ubicación:", error.message);
+                } else if (data && data.length > 0) {
+                  console.log("[Profile] ✅ Ubicación actualizada via watchPosition");
+                }
+              } catch (err) {
+                console.error("[Profile] ❌ Error en watchPosition:", err);
+              }
+            }
+          );
+          
+          // Guardar la suscripción para poder detenerla después
+          (global as any).locationWatchSubscription = watchSubscription;
+          console.log("[Profile] ✅ watchPositionAsync iniciado correctamente");
+        } catch (watchErr) {
+          console.error("[Profile] ❌ Error iniciando watchPosition:", watchErr);
+          console.log("[Profile] 📱 Fallback: usando interval timer");
+        }
+      }
 
       if (Platform.OS !== "web") {
         const isActive = await isTrackingLocation();
@@ -241,6 +290,18 @@ export default function ProfileScreen() {
 
     try {
       stopLocationUpdates();
+      
+      // Detener watchPosition si está activo (Android)
+      if (Platform.OS === "android" && (global as any).locationWatchSubscription) {
+        console.log("[Profile] 🛑 Deteniendo watchPositionAsync");
+        try {
+          (global as any).locationWatchSubscription.remove();
+          (global as any).locationWatchSubscription = null;
+          console.log("[Profile] ✅ watchPositionAsync detenido");
+        } catch (err) {
+          console.error("[Profile] ❌ Error deteniendo watchPosition:", err);
+        }
+      }
 
       if (Platform.OS !== "web") {
         await stopBackgroundLocation();
