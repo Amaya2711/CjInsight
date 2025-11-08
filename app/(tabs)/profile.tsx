@@ -197,9 +197,10 @@ export default function ProfileScreen() {
 
       console.log("[Profile] ✅ Permisos concedidos");
       
-      // En Android, usar watchPositionAsync para actualizaciones continuas
-      if (Platform.OS === "android") {
-        console.log("[Profile] 📱 Android detectado - usando watchPositionAsync para mejor precisión");
+      // En Android y Web, usar watchPositionAsync para actualizaciones continuas
+      if (Platform.OS === "android" || Platform.OS === "web") {
+        const platformName = Platform.OS === "android" ? "Android" : "Web";
+        console.log(`[Profile] 📱 ${platformName} detectado - usando watchPositionAsync para mejor precisión`);
         
         try {
           const watchSubscription = await Location.watchPositionAsync(
@@ -210,7 +211,7 @@ export default function ProfileScreen() {
             },
             async (location) => {
               const { latitude, longitude } = location.coords;
-              console.log("[Profile] 📍 Nueva ubicación (watchPosition):", latitude, longitude);
+              console.log(`[Profile] 📍 Nueva ubicación (watchPosition ${platformName}):`, latitude, longitude);
               
               setCurrentLocation({ latitude, longitude });
               setLastUpdate(new Date());
@@ -229,7 +230,7 @@ export default function ProfileScreen() {
                 if (error) {
                   console.error("[Profile] ❌ Error actualizando ubicación:", error.message);
                 } else if (data && data.length > 0) {
-                  console.log("[Profile] ✅ Ubicación actualizada via watchPosition");
+                  console.log(`[Profile] ✅ Ubicación actualizada via watchPosition (${platformName})`);
                 }
               } catch (err) {
                 console.error("[Profile] ❌ Error en watchPosition:", err);
@@ -239,7 +240,7 @@ export default function ProfileScreen() {
           
           // Guardar la suscripción para poder detenerla después
           (global as any).locationWatchSubscription = watchSubscription;
-          console.log("[Profile] ✅ watchPositionAsync iniciado correctamente");
+          console.log(`[Profile] ✅ watchPositionAsync iniciado correctamente (${platformName})`);
         } catch (watchErr) {
           console.error("[Profile] ❌ Error iniciando watchPosition:", watchErr);
           console.log("[Profile] 📱 Fallback: usando interval timer");
@@ -291,13 +292,14 @@ export default function ProfileScreen() {
     try {
       stopLocationUpdates();
       
-      // Detener watchPosition si está activo (Android)
-      if (Platform.OS === "android" && (global as any).locationWatchSubscription) {
-        console.log("[Profile] 🛑 Deteniendo watchPositionAsync");
+      // Detener watchPosition si está activo (Android o Web)
+      if ((Platform.OS === "android" || Platform.OS === "web") && (global as any).locationWatchSubscription) {
+        const platformName = Platform.OS === "android" ? "Android" : "Web";
+        console.log(`[Profile] 🛑 Deteniendo watchPositionAsync (${platformName})`);
         try {
           (global as any).locationWatchSubscription.remove();
           (global as any).locationWatchSubscription = null;
-          console.log("[Profile] ✅ watchPositionAsync detenido");
+          console.log(`[Profile] ✅ watchPositionAsync detenido (${platformName})`);
         } catch (err) {
           console.error("[Profile] ❌ Error deteniendo watchPosition:", err);
         }
