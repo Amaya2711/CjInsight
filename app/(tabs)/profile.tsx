@@ -497,6 +497,16 @@ export default function ProfileScreen() {
                   : "Iniciar Ruta"}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.historialButton}
+              onPress={() => router.push("/historial-ruta" as any)}
+            >
+              <MapPin size={20} color="#0066cc" />
+              <Text style={styles.historialButtonText}>
+                📊 Consultar Historial de Ruta
+              </Text>
+            </TouchableOpacity>
             
             {isTracking && (
               <Text style={styles.autoStartNote}>
@@ -680,6 +690,23 @@ const styles = StyleSheet.create({
   },
   trackingButtonTextActive: {
     color: "#10B981",
+  },
+  historialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingVertical: 16,
+    borderWidth: 2,
+    borderColor: "#0066cc",
+    marginBottom: 12,
+  },
+  historialButtonText: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: "#0066cc",
   },
 
   version: {
